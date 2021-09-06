@@ -1,0 +1,28 @@
+{
+  "name": "hapijs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon --exec babel-node ./src/index.js",
+    "knex": "knex migrate:make images"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.15.4",
+    "@babel/core": "^7.15.5",
+    "@babel/node": "^7.15.4",
+    "@babel/preset-env": "^7.15.4",
+    "@hapi/hapi": "^20.1.5",
+    "babel-node": "^0.0.1-security",
+    "bcrypt": "^5.0.1",
+    "bluebird": "^3.7.2",
+    "dotenv": "^10.0.0",
+    "knex": "^0.95.11",
+    "nodemon": "^2.0.12",
+    "pg": "^8.7.1",
+    "pg-promise": "^10.11.0"
+  }
+}
