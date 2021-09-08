@@ -8,8 +8,7 @@ fs.readdirSync(__dirname).forEach((folderOrFile) => {
         if (apiModule.default) {
             apiModule = apiModule.default
         }
-
-        console.log(apiModule)
+        
         modules.push(apiModule)
     }
 })
