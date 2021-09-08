@@ -5,7 +5,9 @@ exports.up = function(knex) {
         name varchar NOT NULL,
         price varchar NOT NULL,
         description varchar NOT NULL,
-        created_at timestamp without time zone default (now() at time zone 'Asia/Jakarta')
+        category_id int NOT NULL,
+        created_at timestamp without time zone default (now() at time zone 'Asia/Jakarta'),
+        FOREIGN KEY (category_id) REFERENCES category(category_id)
     )
     `)
   };

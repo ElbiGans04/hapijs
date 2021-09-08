@@ -11,6 +11,6 @@ exports.up = function(knex) {
   };
   
   exports.down = function(knex) {
-    return knex.raw('DROP TABLE IF EXIST article')
+    return knex.raw('DROP TABLE IF EXISTS article')
   };
   
