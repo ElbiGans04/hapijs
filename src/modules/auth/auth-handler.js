@@ -7,7 +7,6 @@ class AuthHandler {
                    
                     const {payload} = request;
                     const checkUser = await request.systemDb.oneOrNone(`SELECT email FROM users WHERE email = $1`, payload.email)
-                    console.log(checkUser)
                     if (checkUser) {
                         return h.response({message: 'email is already'}).code(400)
                     }
