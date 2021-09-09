@@ -4,9 +4,9 @@ module.exports = {
 
     const query = categoryID ? 'SELECT * FROM category WHERE category_id = $1' : 'SELECT * FROM category';
 
-    console.log(await request.systemDb.query(query, categoryID));
+    const result = (await request.systemDb.query(query, categoryID));
 
-    return h.response({ message: "okay" });
+    return h.response({ result });
   },
   post: async (request, h) => {
     const { name } = request.payload ? request.payload : {};
