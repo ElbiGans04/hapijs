@@ -40,7 +40,7 @@ const register = {
         },
       },
       {
-        path: "/products/{productID}",
+        path: "/products/{productID?}",
         method: "DELETE",
         handler: handler.delete,
       },

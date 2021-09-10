@@ -183,6 +183,21 @@ module.exports = {
     try {
       const { productID } = request.params;
 
+      if (!productID) {
+        // Dapatkan daftar dari gambar yang terkait
+        const oldImages = await request.systemDb.query(
+          `SELECT src FROM imagesProduct`
+        );
+
+        // Delete image lama
+        for (let { src } of oldImages) {
+          await fsPromise.unlink(`${pathImages}/${src}`);
+        }
+        await request.systemDb.query("DELETE FROM imagesProduct");
+        await request.systemDb.query("DELETE FROM products");
+        return h.response({ message: "success" }).code(200);
+      }
+
       // Jika belum terdaptar
       const checkProduct = await request.systemDb.oneOrNone(
         `SELECT name FROM products WHERE product_id = $1`,

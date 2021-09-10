@@ -147,14 +147,21 @@ module.exports = {
     try {
       const { articleID } = request.params;
 
-
-      // Jika hapus semua 
+      // Jika hapus semua
       if (!articleID) {
-        await request.systemDb.query(`DELETE FROM imagesArticle`)
-        await request.systemDb.query(`DELETE FROM article`);
-        return h.response({message: 'success'})
-      }
+        // Dapatkan daftar dari gambar yang terkait
+        const oldImages = await request.systemDb.query(
+          `SELECT src FROM imagesArticle`
+        );
 
+        // Delete image lama
+        for (let { src } of oldImages) {
+          await fsPromise.unlink(`${pathImages}/${src}`);
+        }
+        await request.systemDb.query(`DELETE FROM imagesArticle`);
+        await request.systemDb.query(`DELETE FROM article`);
+        return h.response({ message: "success" });
+      }
 
       // Jika belum terdaptar
       const checkArticle = await request.systemDb.oneOrNone(
