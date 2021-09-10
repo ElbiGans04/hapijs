@@ -1,7 +1,7 @@
 import hapijs from '@hapi/hapi'
 import dotenv from 'dotenv'
 import modules from './modules'
-import plugins from "./lib/plugin"
+import plugins from "./lib"
 
 dotenv.config();
 

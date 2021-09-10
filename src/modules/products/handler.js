@@ -1,8 +1,3 @@
-const fs = require("fs");
-const fsPromise = require("fs/promises");
-const path = require("path");
-const pathImages = path.resolve(process.cwd(), "public/images");
-
 module.exports = {
   get: async (request, h) => {
     try {
@@ -71,8 +66,6 @@ module.exports = {
           .response({ error: { title: "invalid category id" } })
           .code(404);
 
-      // handle image upload
-      const imagesName = await Promise.all(handleImages(images));
 
       // Tambahkan Product
       await request.systemDb.query(
@@ -85,15 +78,8 @@ module.exports = {
         await request.systemDb.query(`SELECT MAX(product_id) from products`)
       )[0];
 
-      // Masukan image ke table imagesProduct
-      for (let imageName of imagesName) {
-        const { fileName } = imageName;
-
-        await request.systemDb.query(
-          `INSERT INTO imagesProduct (src, product_id) VALUES ($1, $2)`,
-          [fileName, lastID]
-        );
-      }
+      // handle image
+      await request.saveToDb(images, 'imagesProduct', 'product_id', lastID)
 
       return h.response({ message: "success" }).code(201);
     } catch (err) {
@@ -136,25 +122,7 @@ module.exports = {
       if (!checkProduct)
         return h.response({ error: { title: "product not found" } }).code(404);
 
-      // Dapatkan daftar dari gambar yang terkait
-      const oldImages = await request.systemDb.query(
-        `SELECT src FROM imagesProduct WHERE product_id = $1`,
-        productID
-      );
-
-      // Delete image lama
-      for (let { src } of oldImages) {
-        await fsPromise.unlink(`${pathImages}/${src}`);
-      }
-
-      // delete juga dari database
-      await request.systemDb.query(
-        `DELETE FROM imagesProduct WHERE product_id = $1`,
-        productID
-      );
-
-      // handle image agar tertulis didirectory
-      const imagesName = await Promise.all(handleImages(images));
+      await request.deleteFromDb(`imagesProduct WHERE product_id = $1`, productID)
 
       // Ubah Product
       await request.systemDb.query(
@@ -162,16 +130,7 @@ module.exports = {
         [name, price, description, categoryId, productID]
       );
 
-      // masukan kembali image baru
-      // Masukan image ke table imagesProduct
-      for (let imageName of imagesName) {
-        const { fileName } = imageName;
-
-        await request.systemDb.query(
-          `INSERT INTO imagesProduct (src, product_id) VALUES ($1, $2)`,
-          [fileName, productID]
-        );
-      }
+      await request.saveToDb(images, 'imagesProduct', 'product_id', productID)
 
       return h.response({ message: "success" });
     } catch (err) {
@@ -184,16 +143,7 @@ module.exports = {
       const { productID } = request.params;
 
       if (!productID) {
-        // Dapatkan daftar dari gambar yang terkait
-        const oldImages = await request.systemDb.query(
-          `SELECT src FROM imagesProduct`
-        );
-
-        // Delete image lama
-        for (let { src } of oldImages) {
-          await fsPromise.unlink(`${pathImages}/${src}`);
-        }
-        await request.systemDb.query("DELETE FROM imagesProduct");
+        await request.deleteFromDb(`imagesProduct`)
         await request.systemDb.query("DELETE FROM products");
         return h.response({ message: "success" }).code(200);
       }
@@ -208,22 +158,7 @@ module.exports = {
         return h.response({ message: "product is not found" }).code(404);
       }
 
-      // Dapatkan daftar dari gambar yang terkait
-      const oldImages = await request.systemDb.query(
-        `SELECT src FROM imagesProduct WHERE product_id = $1`,
-        productID
-      );
-
-      // Delete image lama
-      for (let { src } of oldImages) {
-        await fsPromise.unlink(`${pathImages}/${src}`);
-      }
-
-      // delete juga dari database
-      await request.systemDb.query(
-        `DELETE FROM imagesProduct WHERE product_id = $1`,
-        productID
-      );
+      await request.deleteFromDb(`imagesProduct WHERE product_id = $1`, productID)
 
       await request.systemDb.query(
         `DELETE FROM products WHERE product_id = $1`,
@@ -237,33 +172,3 @@ module.exports = {
     }
   },
 };
-
-function handleImages(read) {
-  if (!(read instanceof Array)) read = [read];
-  const promiseImages = [];
-
-  read.forEach((value, index) => {
-    const promise = new Promise((resolve, reject) => {
-      const name = `elbi-${Date.now()}-${Math.round(Math.random() * 10)}.jpg`;
-      const writeStream = fs.createWriteStream(
-        process.cwd() + `/public/images/${name}`
-      );
-
-      writeStream.on("error", (err) => {
-        console.log(err);
-        reject(err);
-      });
-
-      writeStream.on("finish", () => {
-        resolve({ message: "success", fileName: name });
-      });
-
-      value.pipe(writeStream);
-    });
-
-    // masukan kedalam antrian
-    promiseImages.push(promise);
-  });
-
-  return promiseImages;
-}

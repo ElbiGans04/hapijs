@@ -1,8 +1,3 @@
-const fs = require("fs");
-const fsPromise = require("fs/promises");
-const path = require("path");
-const pathImages = path.resolve(process.cwd(), "public/images");
-
 module.exports = {
   get: async (request, h) => {
     try {
@@ -47,9 +42,6 @@ module.exports = {
       if (!title || !description || !slug)
         return h.response({ error: { title: "incomplete field" } }).code(400);
 
-      // handle image upload
-      const imagesName = await Promise.all(handleImages(images));
-
       // Tambahkan Article
       await request.systemDb.query(
         `INSERT INTO article (title, description, slug) VALUES ($1, $2, $3)`,
@@ -61,15 +53,7 @@ module.exports = {
         await request.systemDb.query(`SELECT MAX(article_id) from article`)
       )[0];
 
-      // Masukan image ke table imagesArticle
-      for (let imageName of imagesName) {
-        const { fileName } = imageName;
-
-        await request.systemDb.query(
-          `INSERT INTO imagesArticle (src, article_id) VALUES ($1, $2)`,
-          [fileName, lastID]
-        );
-      }
+      await request.saveToDb(images, 'imagesArticle', 'article_id', lastID)
 
       return h.response({ message: "success" }).code(201);
     } catch (err) {
@@ -100,25 +84,8 @@ module.exports = {
       if (!checkArticle)
         return h.response({ error: { title: "article not found" } }).code(404);
 
-      // Dapatkan daftar dari gambar yang terkait
-      const oldImages = await request.systemDb.query(
-        `SELECT src FROM imagesArticle WHERE article_id = $1`,
-        articleID
-      );
-
-      // Delete image lama
-      for (let { src } of oldImages) {
-        await fsPromise.unlink(`${pathImages}/${src}`);
-      }
-
-      // delete juga dari database
-      await request.systemDb.query(
-        `DELETE FROM imagesArticle WHERE article_id = $1`,
-        articleID
-      );
-
-      // handle image agar tertulis didirectory
-      const imagesName = await Promise.all(handleImages(images));
+      
+      await request.deleteFromDb(`imagesArticle WHERE article_id = $1`, articleID)
 
       // Ubah Product
       await request.systemDb.query(
@@ -126,16 +93,7 @@ module.exports = {
         [title, description, slug, articleID]
       );
 
-      // masukan kembali image baru
-      // Masukan image ke table imagesArticle
-      for (let imageName of imagesName) {
-        const { fileName } = imageName;
-
-        await request.systemDb.query(
-          `INSERT INTO imagesArticle (src, article_id) VALUES ($1, $2)`,
-          [fileName, articleID]
-        );
-      }
+      await request.saveToDb(images, 'imagesArticle', 'article_id', articleID)
 
       return h.response({ message: "success" });
     } catch (err) {
@@ -149,16 +107,7 @@ module.exports = {
 
       // Jika hapus semua
       if (!articleID) {
-        // Dapatkan daftar dari gambar yang terkait
-        const oldImages = await request.systemDb.query(
-          `SELECT src FROM imagesArticle`
-        );
-
-        // Delete image lama
-        for (let { src } of oldImages) {
-          await fsPromise.unlink(`${pathImages}/${src}`);
-        }
-        await request.systemDb.query(`DELETE FROM imagesArticle`);
+        await request.deleteFromDb(`imagesArticle`);
         await request.systemDb.query(`DELETE FROM article`);
         return h.response({ message: "success" });
       }
@@ -173,22 +122,7 @@ module.exports = {
         return h.response({ message: "article is not found" }).code(404);
       }
 
-      // Dapatkan daftar dari gambar yang terkait
-      const oldImages = await request.systemDb.query(
-        `SELECT src FROM imagesArticle WHERE article_id = $1`,
-        articleID
-      );
-
-      // Delete image lama
-      for (let { src } of oldImages) {
-        await fsPromise.unlink(`${pathImages}/${src}`);
-      }
-
-      // delete juga dari database
-      await request.systemDb.query(
-        `DELETE FROM imagesArticle WHERE article_id = $1`,
-        articleID
-      );
+      await request.deleteFromDb(`imagesArticle WHERE article_id = $1`, articleID);
 
       await request.systemDb.query(
         `DELETE FROM article WHERE article_id = $1`,
@@ -202,33 +136,3 @@ module.exports = {
     }
   },
 };
-
-function handleImages(read) {
-  if (!(read instanceof Array)) read = [read];
-  const promiseImages = [];
-
-  read.forEach((value, index) => {
-    const promise = new Promise((resolve, reject) => {
-      const name = `elbi-${Date.now()}-${Math.round(Math.random() * 10)}.jpg`;
-      const writeStream = fs.createWriteStream(
-        process.cwd() + `/public/images/${name}`
-      );
-
-      writeStream.on("error", (err) => {
-        console.log(err);
-        reject(err);
-      });
-
-      writeStream.on("finish", () => {
-        resolve({ message: "success", fileName: name });
-      });
-
-      value.pipe(writeStream);
-    });
-
-    // masukan kedalam antrian
-    promiseImages.push(promise);
-  });
-
-  return promiseImages;
-}
