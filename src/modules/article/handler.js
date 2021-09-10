@@ -147,6 +147,15 @@ module.exports = {
     try {
       const { articleID } = request.params;
 
+
+      // Jika hapus semua 
+      if (!articleID) {
+        await request.systemDb.query(`DELETE FROM imagesArticle`)
+        await request.systemDb.query(`DELETE FROM article`);
+        return h.response({message: 'success'})
+      }
+
+
       // Jika belum terdaptar
       const checkArticle = await request.systemDb.oneOrNone(
         `SELECT title FROM article WHERE article_id = $1`,
