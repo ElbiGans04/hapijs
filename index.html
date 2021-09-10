@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+  <script>
+    var readableStream = new ReadableStream({
+      start(controller) {
+        let count = 0;
+        const interval = setInterval(() => {
+          const waktu = Date.now();
+          controller.enqueue(waktu);
+          count++;
+
+        //   console.log(`count: ${count}. waktu: ${waktu}.`)
+
+          // Stop
+          if (count >= 5) {
+            clearInterval(interval);
+            // controller.close();
+          }
+        }, 500);
+      },
+    });
+
+    
+    const reader = readableStream.getReader();
+    let count = 1;
+    function read() {
+      reader.read().then(result => {
+          const { value, done } = result;
+    
+          console.log(value, count);
+
+          if (count === 5) {
+              reader.cancel().then(result => console.log(result, 'err'))
+          }
+
+          if (done) {
+            console.log("finish");
+             return;
+          } else {
+              read()
+          }
+
+          count++
+      });
+    };
+    
+
+    read()
+
+  </script>
+</html>
