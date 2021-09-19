@@ -7,22 +7,22 @@ const register = {
             {
                 path: '/category/{categoryID?}',
                 method: 'GET',
-                handler: handler.get
+                options: handler.getCategory
             },
             {
                 path: '/category',
                 method: 'POST',
-                handler: handler.post
+                options: handler.postCategory
             },
             {
                 path: '/category/{categoryID}',
                 method: 'PUT',
-                handler: handler.put
+                options: handler.putCategory
             },
             {
                 path: '/category/{categoryID}',
                 method: 'DELETE',
-                handler: handler.delete
+                options: handler.deleteCategory
             },
         ])
     }

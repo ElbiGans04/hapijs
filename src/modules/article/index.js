@@ -7,42 +7,22 @@ const register = {
       {
         path: "/article/{articleID?}",
         method: "GET",
-        handler: handler.get,
+        options: handler.getArticle,
       },
       {
         path: "/article",
         method: "POST",
-        options: {
-          payload: {
-            allow: "multipart/form-data",
-            output: "stream",
-            parse: true,
-            multipart: true,
-            maxBytes: 1024 * 1024 * 100,
-            timeout: false,
-          },
-          handler: handler.post,
-        },
+        options: handler.postArticle,
       },
       {
         path: "/article/{articleID}",
         method: "PUT",
-        options: {
-          payload: {
-            allow: "multipart/form-data",
-            output: "stream",
-            parse: true,
-            multipart: true,
-            maxBytes: 1024 * 1024 * 100,
-            timeout: false,
-          },
-          handler: handler.put,
-        },
+        options: handler.putArticle
       },
       {
         path: "/article/{articleID?}",
         method: "DELETE",
-        handler: handler.delete,
+        options: handler.deleteArticle
       },
     ]);
   },

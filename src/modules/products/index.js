@@ -7,42 +7,22 @@ const register = {
       {
         path: "/products/{productID?}",
         method: "GET",
-        handler: handler.get,
+        config: handler.getProduct,
       },
       {
         path: "/products",
         method: "POST",
-        options: {
-          payload: {
-            allow: "multipart/form-data",
-            output: "stream",
-            parse: true,
-            multipart: true,
-            maxBytes: 1024 * 1024 * 100,
-            timeout: false,
-          },
-          handler: handler.post,
-        },
+        options: handler.postProduct,
       },
       {
         path: "/products/{productID}",
         method: "PUT",
-        options: {
-          payload: {
-            allow: "multipart/form-data",
-            output: "stream",
-            parse: true,
-            multipart: true,
-            maxBytes: 1024 * 1024 * 100,
-            timeout: false,
-          },
-          handler: handler.put,
-        },
+        options: handler.putProduct,
       },
       {
         path: "/products/{productID?}",
         method: "DELETE",
-        handler: handler.delete,
+        options: handler.deleteProduct,
       },
     ]);
   },
