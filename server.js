@@ -7,7 +7,7 @@ dotenv.config();
 
 const initServer = async () => {
     const server = hapijs.Server({
-        port: process.env.SERVER_PORT || 8000,
+        port: process.env.SERVER_PORT || 3000,
         host: 'localhost',
         routes: {
             payload : {
@@ -29,7 +29,7 @@ const runServer = async () => {
     try {
         const server = await initServer();
         await server.start();
-        console.log(`Server already running on ${process.env.SERVER_PORT || 8000}`)
+        console.log(`Server already running on ${process.env.SERVER_PORT || 3000}`)
     } catch (err) {
         console.log(err);
         return err;

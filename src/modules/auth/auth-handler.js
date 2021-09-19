@@ -25,6 +25,34 @@ class AuthHandler {
             }
         }
     }
+
+    get loginUser () {
+        return {
+            handler: async (request, h) => {
+                try {
+                    const {payload, systemDb} = request;
+                    const checkUser = await systemDb.oneOrNone(`SELECT * FROM users WHERE email = $1`, payload.email);
+
+                    if (!checkUser) {
+                        return h.response({message: 'Email Anda Tidak Terdaftar'}).code(400)
+                    }
+
+                    // cek password user
+                    if (!Bcrypt.compareSync(payload.password, checkUser.password)) {
+                        return h.response({message: 'email atau password anda salah'}).code(400)
+                    };
+
+                    const token = request.jwtHelper(checkUser);
+
+                    return h.response({data: checkUser, token}).code(200)
+
+
+                } catch (err) {
+                    return h.response({message: err.message}).code(500)
+                }
+            }
+        }
+    }
 }
 
 export default new AuthHandler

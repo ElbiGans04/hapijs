@@ -21,6 +21,8 @@
     "bcrypt": "^5.0.1",
     "bluebird": "^3.7.2",
     "dotenv": "^10.0.0",
+    "hapi-auth-jwt2": "^10.2.0",
+    "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.11",
     "nodemon": "^2.0.12",
     "pg": "^8.7.1",

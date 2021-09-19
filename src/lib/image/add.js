@@ -1,4 +1,4 @@
-import { pgSysDb } from '../db/db'
+import { pgSysDb } from '../db'
 import fs from 'fs'
 
 function handleImages(read) {

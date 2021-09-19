@@ -1,7 +1,7 @@
 import hapijs from '@hapi/hapi'
 import dotenv from 'dotenv'
 import modules from './modules'
-import plugins from "./lib"
+import plugins from "./lib/plugin";
 
 dotenv.config();
 
@@ -14,7 +14,10 @@ const initServer = async () => {
                 maxBytes: 20971520
             }
         }
-    })
+    });
+    
+
+    // Daftarkan semua plugin
     await server.register(plugins)
     await server.register(modules);
     return server;

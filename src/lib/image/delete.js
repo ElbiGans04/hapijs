@@ -1,4 +1,4 @@
-import { pgSysDb } from "../db/db";
+import { pgSysDb } from "../db";
 import fsPromise from "fs/promises";
 const path = require("path");
 const pathImages = path.resolve(process.cwd(), "public/images");
